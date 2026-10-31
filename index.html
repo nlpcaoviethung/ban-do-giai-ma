@@ -30,8 +30,17 @@ info['Bốn đỉnh cao cuộc đời']=info['Bốn đỉnh'];
 function sumDigits(v){return String(v).replace(/\D/g,'').split('').reduce((a,c)=>a+Number(c),0)}
 function reduce(n,keepMaster=false){n=Number(n);while(n>9&&!(keepMaster&&[11,22,33].includes(n)))n=sumDigits(n);return n}
 function reduceLife(n){while(n>9)n=sumDigits(n);return n}
-// Riêng Số chủ đạo: giữ kết quả 10, không rút gọn tiếp thành 1.
-function reduceLifeKeep10(n){n=Number(n);while(n>10)n=sumDigits(n);return n}
+// Số chủ đạo: giữ các số bậc thầy 11/22/33 và giữ 10 theo quy ước của công cụ.
+function reduceLifeKeepMaster(n){
+  n=Number(n);
+  while(n>9 && ![10,11,22,33].includes(n)) n=sumDigits(n);
+  return n;
+}
+function lifePathDisplay(n){
+  // Hiển thị số bậc thầy kèm nền tảng rút gọn, ví dụ 11/2.
+  if([11,22,33].includes(Number(n))) return `${n}/${reduceLife(n)}`;
+  return String(n);
+}
 let chartDecode={counts:{},digits:[]};
 function normalizeName(s){return s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[Đđ]/g,'D').toUpperCase().replace(/[^A-Z ]/g,'').replace(/\s+/g,' ').trim()}
 function nameNumbers(name,kind='all'){let clean=normalizeName(name).replace(/ /g,'');const vowels='AEIOU';return [...clean].reduce((a,c)=>a+((kind==='all'||(kind==='vowel'&&vowels.includes(c))||(kind==='consonant'&&!vowels.includes(c)))?(letterMap[c]||0):0),0)}
@@ -49,6 +58,11 @@ const numberMeaning={
 22:{title:'Tầm nhìn và kiến tạo',strength:'Một số trường phái diễn giải 22 như biểu tượng của việc biến tầm nhìn lớn thành kế hoạch thực tế.',watch:'Không nên tự tạo áp lực phải làm điều phi thường; cần chia mục tiêu thành bước nhỏ và nguồn lực khả thi.',ask:'Tầm nhìn nào có thể được chuyển thành một bước nhỏ trong tuần này?'},
 33:{title:'Chăm sóc và đóng góp',strength:'Một số trường phái gắn 33 với lòng trắc ẩn, hướng dẫn và tinh thần phục vụ.',watch:'Không nên mặc định mình phải hy sinh hay cứu giúp mọi người; ranh giới cá nhân vẫn quan trọng.',ask:'Bạn có thể giúp người khác theo cách nào vừa hữu ích vừa bền vững với mình?'}
 };
+const masterNumberMeaning={
+  11:{title:'Trực giác, cảm hứng và khả năng truyền cảm hứng',strength:'Trong cách diễn giải thần số học, 11/2 thường được xem là số bậc thầy gắn với việc phát triển trực giác, độ nhạy cảm và khả năng khơi gợi cảm hứng. Nền tảng 2 nhấn mạnh sự hợp tác và tinh tế; bài học không chỉ là hòa hợp với người khác mà còn là học cách tin cậy nhận thức của mình, kiểm chứng bằng thực tế và chuyển cảm hứng thành hành động hữu ích.',watch:'Độ nhạy cảm có thể khiến bạn dễ quá tải, lý tưởng hóa trực giác hoặc dao động trước ý kiến xung quanh. Trực giác không thay thế dữ kiện, trao đổi rõ ràng và quyết định có cân nhắc.',ask:'Làm thế nào để lắng nghe trực giác mà vẫn kiểm chứng bằng thực tế, giữ ranh giới cá nhân và biến cảm hứng thành một hành động cụ thể?'},
+  22:{title:'Tầm nhìn lớn và năng lực kiến tạo thực tế',strength:'Trong cách diễn giải thần số học, 22/4 thường được xem là số bậc thầy gắn với việc biến tầm nhìn dài hạn thành hệ thống, công trình hoặc kết quả có ích. Nền tảng 4 nhấn mạnh tính kỷ luật và cấu trúc; bài học của 22/4 là kết hợp tầm nhìn rộng với kế hoạch thực tế, chia nhỏ mục tiêu và xây dựng từng bước bền vững.',watch:'Mục tiêu lớn có thể tạo áp lực, xu hướng kiểm soát hoặc cầu toàn; cũng có thể khiến bạn trì hoãn khi thấy khoảng cách giữa ý tưởng và kết quả quá xa. Hãy bắt đầu từ quy mô phù hợp với nguồn lực hiện có.',ask:'Tầm nhìn nào thật sự quan trọng với bạn, và bạn có thể chuyển nó thành một bước nhỏ, đo lường được trong tuần này như thế nào?'},
+  33:{title:'Lòng trắc ẩn, phụng sự và trách nhiệm có ranh giới',strength:'Trong cách diễn giải thần số học, 33/6 thường được xem là số bậc thầy gắn với lòng trắc ẩn, chăm sóc, hướng dẫn và đóng góp cho cộng đồng. Nền tảng 6 nhấn mạnh trách nhiệm và sự hài hòa; bài học của 33/6 là hỗ trợ người khác bằng năng lực thực tế mà không đánh mất nhu cầu, giới hạn và trách nhiệm với chính mình.',watch:'Mong muốn giúp đỡ có thể chuyển thành gánh vác quá mức, hy sinh bản thân hoặc cảm giác phải cứu chữa mọi người. Sự chăm sóc lành mạnh cần có sự đồng thuận, giới hạn rõ ràng và khả năng để người khác tự chịu trách nhiệm.',ask:'Bạn đang giúp đỡ từ sự tự nguyện hay từ cảm giác mình phải gánh vác? Làm thế nào để vừa đóng góp cho người khác vừa chăm sóc bản thân và tôn trọng quyền tự chủ của họ?'}
+};
 function meaningFor(value){const n=Number(String(value).match(/\d+/)?.[0]);return numberMeaning[n===10?1:n]||null}
 function displayTitle(key){
  const labels={
@@ -63,7 +77,7 @@ function displayTitle(key){
 }
 function tabLabel(key,value){
  const labels={
-  'Chủ đạo':`Chủ đạo: ${value}`,'Ngày sinh':`Ngày sinh: ${value}`,
+  'Chủ đạo':`Chủ đạo: ${lifePathDisplay(value)}`,'Ngày sinh':`Ngày sinh: ${value}`,
   'Biểu đồ ngày sinh':'Biểu đồ ngày sinh','Bốn đỉnh cao cuộc đời':'Bốn đỉnh cao cuộc đời',
   'Đỉnh 1':`Đỉnh 1: ${value}`,'Đỉnh 2':`Đỉnh 2: ${value}`,'Đỉnh 3':`Đỉnh 3: ${value}`,'Đỉnh 4':`Đỉnh 4: ${value}`,
   'Sứ mệnh':`Sứ mệnh: ${value}`,'Nội tâm':`Nội tâm: ${value}`,
@@ -75,7 +89,8 @@ function renderDetail(key,value){
  const infoKey=key==='Biểu đồ ngày sinh'?'Biểu đồ':(key==='Bốn đỉnh cao cuộc đời'?'Bốn đỉnh':key);
  const d=info[infoKey]||info['Chủ đạo'];
  const heading=displayTitle(key);
- const m=meaningFor(value);
+ const master=key==='Chủ đạo'?masterNumberMeaning[Number(value)]:null;
+ const m=master||meaningFor(value);
  let extra='';
  if(/^Đỉnh [1-4]$/.test(key)){
    const idx=Number(key.split(' ')[1])-1;
@@ -92,8 +107,8 @@ function renderDetail(key,value){
  if(key==='Bốn đỉnh cao cuộc đời' || key==='Bốn đỉnh')extra=`<p>${d[1]}</p><p><b>Bốn đỉnh trong bản đồ gồm:</b> ${value||'xem các con số ở bảng phía trên'}. Mỗi đỉnh gắn với một con số và một mốc tuổi tương ứng.</p><p>Chọn từng nút “Đỉnh 1” đến “Đỉnh 4” để xem ý nghĩa của từng con số gắn với từng giai đoạn. Mốc tuổi là quy ước của phương pháp, không phải lời dự báo chắc chắn.</p><div class="question"><b>Câu hỏi tự khám phá</b><br>${d[2]}</div>`;
  document.getElementById('detail').innerHTML=`<div class="numtag">${heading}</div><h3>${heading}</h3>${extra}<p class="notice">Đây là diễn giải biểu tượng để tự phản tư, không phải kết luận khoa học hay dự đoán chắc chắn. Hãy giữ lại điều phù hợp với trải nghiệm thực tế và bỏ qua điều không phù hợp.</p>`;
 }
-function calc(){const name=document.getElementById('fullname').value.trim(),dob=document.getElementById('dob').value;const message=document.getElementById('formMessage');if(!name||!dob){if(message)message.textContent='Vui lòng nhập họ tên và ngày sinh đầy đủ.';return;}let parts;if(/^\d{4}-\d{2}-\d{2}$/.test(dob)){parts=dob.split('-').map(Number).map((v,i)=>i===0?v:v);}else if(/^\d{2}\/\d{2}\/\d{4}$/.test(dob)){const q=dob.split('/').map(Number);parts=[q[2],q[1],q[0]];}else{parts=[];}if(parts.length!==3||parts.some(n=>!Number.isFinite(n))){if(message)message.textContent='Ngày sinh chưa hợp lệ. Vui lòng chọn ngày sinh dương lịch.';return;}const [y,m,d]=parts;const dateCheck=new Date(y,m-1,d);if(dateCheck.getFullYear()!==y||dateCheck.getMonth()!==m-1||dateCheck.getDate()!==d){if(message)message.textContent='Ngày sinh không tồn tại. Vui lòng kiểm tra lại.';return;}if(message)message.textContent='Đã tạo bản đồ thành công.';document.getElementById('results').hidden=false;const life=reduceLifeKeep10(sumDigits(`${y}${m}${d}`));const dayNum=reduceLife(d);const monthNum=reduceLife(m);const yearNum=reduceLife(y);const now=new Date();const thisYear=now.getFullYear();const universal=reduceLife(sumDigits(thisYear));const py=reduceLife(d+m+sumDigits(thisYear));const pm=reduceLife(py+(now.getMonth()+1));
- let actualAge=now.getFullYear()-y;if(now.getMonth()+1<m||(now.getMonth()+1===m&&now.getDate()<d))actualAge--;document.getElementById('currentAge').textContent='Tuổi hiện tại: '+actualAge;document.getElementById('life').textContent=life;document.getElementById('displayName').textContent=name.toLocaleUpperCase('vi-VN');document.getElementById('displayDob').textContent=`${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;document.getElementById('universalYear').textContent=universal;document.getElementById('personalYear').textContent=py;document.getElementById('personalMonth').textContent=pm;
+function calc(){const name=document.getElementById('fullname').value.trim(),dob=document.getElementById('dob').value;const message=document.getElementById('formMessage');if(!name||!dob){if(message)message.textContent='Vui lòng nhập họ tên và ngày sinh đầy đủ.';return;}let parts;if(/^\d{4}-\d{2}-\d{2}$/.test(dob)){parts=dob.split('-').map(Number).map((v,i)=>i===0?v:v);}else if(/^\d{2}\/\d{2}\/\d{4}$/.test(dob)){const q=dob.split('/').map(Number);parts=[q[2],q[1],q[0]];}else{parts=[];}if(parts.length!==3||parts.some(n=>!Number.isFinite(n))){if(message)message.textContent='Ngày sinh chưa hợp lệ. Vui lòng chọn ngày sinh dương lịch.';return;}const [y,m,d]=parts;const dateCheck=new Date(y,m-1,d);if(dateCheck.getFullYear()!==y||dateCheck.getMonth()!==m-1||dateCheck.getDate()!==d){if(message)message.textContent='Ngày sinh không tồn tại. Vui lòng kiểm tra lại.';return;}if(message)message.textContent='Đã tạo bản đồ thành công.';document.getElementById('results').hidden=false;const life=reduceLifeKeepMaster(sumDigits(`${y}${m}${d}`));const dayNum=reduceLife(d);const monthNum=reduceLife(m);const yearNum=reduceLife(y);const now=new Date();const thisYear=now.getFullYear();const universal=reduceLife(sumDigits(thisYear));const py=reduceLife(d+m+sumDigits(thisYear));const pm=reduceLife(py+(now.getMonth()+1));
+ let actualAge=now.getFullYear()-y;if(now.getMonth()+1<m||(now.getMonth()+1===m&&now.getDate()<d))actualAge--;document.getElementById('currentAge').textContent='Tuổi hiện tại: '+actualAge;document.getElementById('life').textContent=lifePathDisplay(life);document.getElementById('displayName').textContent=name.toLocaleUpperCase('vi-VN');document.getElementById('displayDob').textContent=`${String(d).padStart(2,'0')}/${String(m).padStart(2,'0')}/${y}`;document.getElementById('universalYear').textContent=universal;document.getElementById('personalYear').textContent=py;document.getElementById('personalMonth').textContent=pm;
  const digits=`${String(d).padStart(2,'0')}${String(m).padStart(2,'0')}${y}`;const counts={};for(const c of digits)if(c!=='0')counts[c]=(counts[c]||0)+1;chartDecode={counts,digits:[...digits].filter(c=>c!=='0')};const positions=[3,6,9,2,5,8,1,4,7];document.getElementById('grid').innerHTML=positions.map(n=>`<div class="cell ${counts[n]?'':'empty'}"><div class="num">${counts[n]?String(n).repeat(counts[n]):'—'}</div><small>${n} · ${counts[n]?counts[n]+' lần':'vắng mặt'}</small></div>`).join('');
  const p1=reduceLife(monthNum+dayNum),p2=reduceLife(dayNum+yearNum),p3=reduceLife(p1+p2),p4=reduceLife(monthNum+yearNum);const pinnacleLife=reduceLife(life);const ages=[36-pinnacleLife,45-pinnacleLife,54-pinnacleLife,54-pinnacleLife];const nums=[p1,p2,p3,p4];const ranges=[`0–${ages[0]}`,`${ages[0]+1}–${ages[1]}`,`${ages[1]+1}–${ages[2]}`,`${ages[2]+1}+`];document.getElementById('peaks').innerHTML=nums.map((n,i)=>`<div class="peak"><div class="peaknum">${n}</div><div class="age">${ranges[i]} tuổi</div><div class="period">Đỉnh ${i+1}</div></div>`).join('');
  const totalName=nameNumbers(name),vow=nameNumbers(name,'vowel');
